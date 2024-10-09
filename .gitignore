@@ -15,6 +15,7 @@
 *.so
 *.dylib
 *.dll
+*.pdb
 
 # Fortran module files
 *.mod
@@ -46,7 +47,7 @@ SourceArt/**/*.png
 SourceArt/**/*.tga
 
 # Binary Files
-Binaries/*
+SokobanGame/Binaries/*
 Plugins/*/Binaries/*
 
 # Builds
@@ -67,7 +68,7 @@ Build/*/**
 Saved/*
 
 # Compiled source files for the engine to use
-Intermediate/*
+SokobanGame/Intermediate/*
 Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
