@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "InputActionValue.h"
 #include "SokobanCharacter.generated.h"
 
 UCLASS()
@@ -26,4 +27,18 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+private:
+	APlayerController* SokobanPlayerController;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	class UInputMappingContext* MappingContext;
+	//Input Actions Declared here but Set in BP
+	UPROPERTY(EditAnywhere, Category = "Input")
+	class UInputAction* MoveAction;
+	UPROPERTY(EditAnywhere, Category = "Input")
+	class UInputAction* QuitGameAction;
+
+	void SetInitialMappingContext();
+	void Move(const FInputActionValue& Value);
+	void Quit(const FInputActionValue& Value);
 };

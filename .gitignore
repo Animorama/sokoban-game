@@ -51,7 +51,7 @@ SokobanGame/Binaries/*
 Plugins/*/Binaries/*
 
 # Builds
-Build/*
+SokobanGame/Build/*
 
 # Whitelist PakBlacklist-<BuildConfiguration>.txt files
 !Build/*/
@@ -73,3 +73,15 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# SlimeGuyPackage
+SokobanGame/Content/StylizedSlimeGuy/*
+
+SokobanGame/Saved/*
+
+#Animation Blueprint
+SokobanGame/Content/*
+
+
+
+

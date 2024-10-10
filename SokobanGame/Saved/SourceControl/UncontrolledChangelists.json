@@ -5,7 +5,16 @@
 			"guid": "00000000000000000000000000000000",
 			"description": "Default Uncontrolled Changelist",
 			"files": [
-				"C:/Users/jmora/Documents/Unreal Projects/sokoban-game/SokobanGame/Content/TestMap.umap"
+				"C:/Users/jmora/Documents/Unreal Projects/sokoban-game/SokobanGame/Content/TestMap.umap",
+				"C:/Users/jmora/Documents/Unreal Projects/sokoban-game/SokobanGame/Content/Blueprints/BP_SokobanCharacter.uasset",
+				"C:/Users/jmora/Documents/Unreal Projects/sokoban-game/SokobanGame/Content/GameModes/BP_SokobanGameMode.uasset",
+				"C:/Users/jmora/Documents/Unreal Projects/sokoban-game/SokobanGame/Content/Input/IMC_Default.uasset",
+				"C:/Users/jmora/Documents/Unreal Projects/sokoban-game/SokobanGame/Content/Input/IA_Move.uasset",
+				"C:/Users/jmora/Documents/Unreal Projects/sokoban-game/SokobanGame/Content/Input/IA_QuitGame.uasset",
+				"C:/Users/jmora/Documents/Unreal Projects/sokoban-game/SokobanGame/Content/Blueprints/Animation/AB_SokobanCharacter.uasset",
+				"C:/Users/jmora/Documents/Unreal Projects/sokoban-game/SokobanGame/Content/Blueprints/Animation/ABP_SokobanCharacter.uasset",
+				"C:/Users/jmora/Documents/Unreal Projects/sokoban-game/SokobanGame/Content/Blueprints/Animation/BS_Locomotion.uasset",
+				"C:/Users/jmora/Documents/Unreal Projects/sokoban-game/SokobanGame/Content/Input/IA_Quit.uasset"
 			]
 		}
 	]
