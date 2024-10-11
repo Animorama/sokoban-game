@@ -16,6 +16,8 @@ public:
 	// Sets default values for this character's properties
 	ASokobanCharacter();
 
+	void SetEnabledMovement(bool bMovementEnabled);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -37,6 +39,11 @@ private:
 	class UInputAction* MoveAction;
 	UPROPERTY(EditAnywhere, Category = "Input")
 	class UInputAction* QuitGameAction;
+
+	UCharacterMovementComponent* MovementComponent;
+
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, meta = (AllowPrivateAccess = "true"), Category = "Animation")
+	bool bIsPushing = false;
 
 	void SetInitialMappingContext();
 	void Move(const FInputActionValue& Value);

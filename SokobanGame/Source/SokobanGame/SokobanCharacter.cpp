@@ -6,6 +6,7 @@
 #include "EnhancedInputComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "DrawDebugHelpers.h"
 
 // Sets default values
@@ -16,12 +17,34 @@ ASokobanCharacter::ASokobanCharacter()
 
 }
 
+void ASokobanCharacter::SetEnabledMovement(bool bMovementEnabled)
+{
+	if (MovementComponent)
+	{
+		if (bMovementEnabled)
+		{
+			MovementComponent->SetMovementMode(EMovementMode::MOVE_Walking);
+
+			//REFACTOR -> This should not be here?
+			bIsPushing = false;
+		}
+		else
+		{
+			MovementComponent->DisableMovement();
+
+			//REFACTOR -> This should not be here?
+			bIsPushing = true;
+		}
+	}
+}
+
 // Called when the game starts or when spawned
 void ASokobanCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
 	SetInitialMappingContext();
+	MovementComponent = GetCharacterMovement();
 }
 
 // Called every frame
@@ -79,9 +102,9 @@ void ASokobanCharacter::Move(const FInputActionValue& Value)
 	AddMovementInput(Right, MovementVector.X);
 
 	// Draw Debug Line Gizmo Of Actor Forward
-	FVector Start = GetActorLocation();
-	FVector End = Start + GetActorForwardVector() * 100.f;
-	DrawDebugLine(GetWorld(), Start, End, FColor::Red);
+	//FVector Start = GetActorLocation();
+	//FVector End = Start + GetActorForwardVector() * 100.f;
+	//DrawDebugLine(GetWorld(), Start, End, FColor::Red);
 }
 
 
