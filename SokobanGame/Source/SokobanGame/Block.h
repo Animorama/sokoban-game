@@ -38,6 +38,7 @@ private:
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 	bool CanPush();
+	bool HasObstacle();
 
 	UPROPERTY(EditDefaultsOnly)
 	float PushDistance = 100.f;

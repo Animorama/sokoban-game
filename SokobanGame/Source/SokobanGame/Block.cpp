@@ -46,15 +46,16 @@ void ABlock::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveC
 	FVector OtherActorDirection(VectorX, VectorY, 0.f);
 	//UE_LOG(LogTemp, Warning, TEXT("Other Actor Direction: %s"), *OtherActorDirection.ToString());
 
+	PushDirection = OtherActorDirection;
+
 	if (Character && CanPush())
 	{
-		if(!bIsMoving)
+		if(!bIsMoving && !HasObstacle())
 		{
 			Character->SetEnabledMovement(false);
 			//Seemingly, attachment rules must be defined
 			FAttachmentTransformRules AttachmentRules(EAttachmentRule::KeepWorld, true);
 			Character->AttachToActor(this, AttachmentRules);
-			PushDirection = OtherActorDirection;
 			TargetLocation = GetActorLocation() + PushDirection * PushDistance;
 			bIsMoving = true;
 		}
@@ -66,6 +67,7 @@ bool ABlock::CanPush()
 	UWorld* World = GetWorld();
 	if (Character && World)
 	{
+		//Line Trace from Character Hit this Block
 		FVector Start = Character->GetActorLocation();
 		FVector End = Start + Character->GetActorForwardVector() * 100.f;
 		FHitResult HitResult;
@@ -73,10 +75,63 @@ bool ABlock::CanPush()
 		CollisionParams.AddIgnoredActor(Character);
 
 		bool bHit = World->LineTraceSingleByChannel(HitResult, Start, End, ECollisionChannel::ECC_Visibility);
-
-		//Line Trace from Character Hit this Block
-		if (bHit && HitResult.GetActor() == this)
+		
+		//Make Sure Block only moves in cardinal directions
+		float Dot = static_cast<float>(HitResult.Normal.Dot(Character->GetActorForwardVector()));
+		
+		if (bHit && HitResult.GetActor() == this && FMath::Abs(Dot) >= 0.92f)
 		{
+			return true;
+		}
+
+	}
+	return false;
+}
+
+bool ABlock::HasObstacle()
+{
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		//Box Trace from this Block did not find an obstacle in pushing direction
+		FVector Start = GetActorLocation();
+		//Get World Size of Box, returns half-size EX: 100cm box returns 50cm
+		FVector HalfSize = BlockMeshComponent->Bounds.BoxExtent;
+		FVector End = Start + PushDirection * PushDistance;
+		FQuat BoxRotation = FQuat::Identity;
+		FCollisionQueryParams CollisionParams;
+		CollisionParams.AddIgnoredActor(this);
+		FHitResult HitResult;
+
+		//Height Offset to not collide with floor (50.f from box half-size + 10.f real offset)
+		Start.Z += 60.f;
+		End.Z += 60.f;
+
+		bool bObstacleHit = World->SweepSingleByChannel(
+			HitResult,
+			Start,
+			End,
+			BoxRotation,
+			ECollisionChannel::ECC_Visibility,
+			FCollisionShape::MakeBox(HalfSize),
+			CollisionParams);
+
+		//Draw Box Path
+		DrawDebugBox(World, Start, HalfSize, FColor::Green, false, 2.0f);
+		DrawDebugBox(World, End, HalfSize, FColor::Blue, false, 2.0f);
+
+		//Line Trace to check for edges on map
+		Start = End;
+		End.Z -= 100.f;
+		FHitResult EdgeHitResult;
+
+		bool bFloorHit = World->LineTraceSingleByChannel(EdgeHitResult, Start, End, ECollisionChannel::ECC_Visibility, CollisionParams);
+
+		DrawDebugLine(World, Start, End, FColor::Red, false, 2.0f);
+
+		if (bObstacleHit || !bFloorHit)
+		{
+			//UE_LOG(LogTemp, Warning, TEXT("Actor Hit: %s"), *HitResult.GetActor()->GetName());
 			return true;
 		}
 	}
