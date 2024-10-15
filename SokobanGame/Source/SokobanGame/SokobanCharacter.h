@@ -39,6 +39,8 @@ private:
 	class UInputAction* MoveAction;
 	UPROPERTY(EditAnywhere, Category = "Input")
 	class UInputAction* QuitGameAction;
+	UPROPERTY(EditAnywhere, Category = "Input")
+	class UInputAction* ResetAction;
 
 	UCharacterMovementComponent* MovementComponent;
 
@@ -48,4 +50,5 @@ private:
 	void SetInitialMappingContext();
 	void Move(const FInputActionValue& Value);
 	void Quit(const FInputActionValue& Value);
+	void Reset(const FInputActionValue& Value);
 };

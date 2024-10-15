@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "DrawDebugHelpers.h"
+#include "SokobanPlayerController.h"
 
 // Sets default values
 ASokobanCharacter::ASokobanCharacter()
@@ -82,6 +83,7 @@ void ASokobanCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		//N: #include "Components/InputComponent.h"
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASokobanCharacter::Move);
 		EnhancedInputComponent->BindAction(QuitGameAction, ETriggerEvent::Triggered, this, &ASokobanCharacter::Quit);
+		EnhancedInputComponent->BindAction(ResetAction, ETriggerEvent::Triggered, this, &ASokobanCharacter::Reset);
 	}
 
 }
@@ -101,15 +103,24 @@ void ASokobanCharacter::Move(const FInputActionValue& Value)
 	AddMovementInput(Forward, MovementVector.Y);
 	AddMovementInput(Right, MovementVector.X);
 
-	// Draw Debug Line Gizmo Of Actor Forward
-	//FVector Start = GetActorLocation();
-	//FVector End = Start + GetActorForwardVector() * 100.f;
-	//DrawDebugLine(GetWorld(), Start, End, FColor::Red);
+	//Draw Debug Line Gizmo Of Actor Forward
+	FVector Start = GetActorLocation();
+	FVector End = Start + GetActorForwardVector() * 100.f;
+	DrawDebugLine(GetWorld(), Start, End, FColor::Red);
 }
 
 
 void ASokobanCharacter::Quit(const FInputActionValue& Value)
 {
 	UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0), EQuitPreference::Type::Quit, false);
+}
+
+void ASokobanCharacter::Reset(const FInputActionValue& Value)
+{
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	if (PlayerController)
+	{
+		PlayerController->RestartLevel();
+	}
 }
 

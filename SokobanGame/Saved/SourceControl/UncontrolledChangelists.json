@@ -14,9 +14,12 @@
 				"C:/Users/jmora/Documents/Unreal Projects/sokoban-game/SokobanGame/Content/Blueprints/Animation/ABP_SokobanCharacter.uasset",
 				"C:/Users/jmora/Documents/Unreal Projects/sokoban-game/SokobanGame/Content/Blueprints/Animation/BS_Locomotion.uasset",
 				"C:/Users/jmora/Documents/Unreal Projects/sokoban-game/SokobanGame/Content/Blueprints/Blocks/BP_Block.uasset",
+				"C:/Users/jmora/Documents/Unreal Projects/sokoban-game/SokobanGame/Content/StylizedSlimeGuy/Meshes/SK_SlimeGuy.uasset",
+				"C:/Users/jmora/Documents/Unreal Projects/sokoban-game/SokobanGame/Content/Blueprints/Blocks/BP_Trigger.uasset",
+				"C:/Users/jmora/Documents/Unreal Projects/sokoban-game/SokobanGame/Content/Blueprints/BP_SokobanPlayerController.uasset",
+				"C:/Users/jmora/Documents/Unreal Projects/sokoban-game/SokobanGame/Content/Input/IA_Reset.uasset",
 				"C:/Users/jmora/Documents/Unreal Projects/sokoban-game/SokobanGame/Content/Blueprints/Animation/BS_Pushing.uasset",
 				"C:/Users/jmora/Documents/Unreal Projects/sokoban-game/SokobanGame/Content/Blueprints/Animation/AM_Pushing.uasset",
-				"C:/Users/jmora/Documents/Unreal Projects/sokoban-game/SokobanGame/Content/StylizedSlimeGuy/Meshes/SK_SlimeGuy.uasset",
 				"C:/Users/jmora/Documents/Unreal Projects/sokoban-game/SokobanGame/Content/StylizedSlimeGuy/Animations/A_Push.uasset",
 				"C:/Users/jmora/Documents/Unreal Projects/sokoban-game/SokobanGame/Content/Blueprints/Animation/AB_SokobanCharacter.uasset",
 				"C:/Users/jmora/Documents/Unreal Projects/sokoban-game/SokobanGame/Content/Input/IA_Quit.uasset"
