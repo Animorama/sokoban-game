@@ -46,9 +46,19 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, meta = (AllowPrivateAccess = "true"), Category = "Animation")
 	bool bIsPushing = false;
+	const FVector Forward = FVector(1, 0, 0);
+	const FVector Right = FVector(0, 1, 0);
+	UPROPERTY(EditAnywhere, Category = "Movement")
+	float EdgeOffsetDistance = 50.f;
+	UPROPERTY(EditAnywhere, Category = "Movement")
+	float EdgeDepthCheckDistance = 100.f;
 
 	void SetInitialMappingContext();
 	void Move(const FInputActionValue& Value);
 	void Quit(const FInputActionValue& Value);
 	void Reset(const FInputActionValue& Value);
+	bool EdgeInDirection(FVector Direction);
+
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	TSubclassOf<class UCameraShakeBase> ResetCameraShakeClass;
 };

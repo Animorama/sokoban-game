@@ -58,6 +58,9 @@ void ABlock::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveC
 			Character->AttachToActor(this, AttachmentRules);
 			TargetLocation = GetActorLocation() + PushDirection * PushDistance;
 			bIsMoving = true;
+
+			//Play sound
+			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), PushSound, GetActorLocation());
 		}
 	}
 }

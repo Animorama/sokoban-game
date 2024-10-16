@@ -97,16 +97,18 @@ void ASokobanCharacter::Move(const FInputActionValue& Value)
 		return;
 	}
 
-	const FVector Forward = FVector(1, 0, 0); 
-	const FVector Right = FVector(0, 1, 0);
+	FVector Direction = FVector(MovementVector.Y, MovementVector.X, 0.f);
 
-	AddMovementInput(Forward, MovementVector.Y);
-	AddMovementInput(Right, MovementVector.X);
+	if (!EdgeInDirection(Direction))
+	{
+		AddMovementInput(Forward, MovementVector.Y);
+		AddMovementInput(Right, MovementVector.X);
+	}
 
-	//Draw Debug Line Gizmo Of Actor Forward
-	FVector Start = GetActorLocation();
-	FVector End = Start + GetActorForwardVector() * 100.f;
-	DrawDebugLine(GetWorld(), Start, End, FColor::Red);
+	////Draw Debug Line Gizmo Of Actor Forward
+	//FVector Start = GetActorLocation();
+	//FVector End = Start + GetActorForwardVector() * 100.f;
+	//DrawDebugLine(GetWorld(), Start, End, FColor::Red);
 }
 
 
@@ -121,6 +123,37 @@ void ASokobanCharacter::Reset(const FInputActionValue& Value)
 	if (PlayerController)
 	{
 		PlayerController->RestartLevel();
+		//CameraShake not looking good due to RestartLevel()
+		if (ResetCameraShakeClass)
+		{
+			PlayerController->ClientStartCameraShake(ResetCameraShakeClass);
+		}
 	}
+}
+
+bool ASokobanCharacter::EdgeInDirection(FVector Direction)
+{
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		//Line Trace to check for edges on map
+		//FVector Start = GetActorLocation() + GetActorForwardVector() * 100.f;
+		FVector Start = GetActorLocation() + Direction * EdgeOffsetDistance;
+		FVector End = Start;
+		End.Z -= EdgeDepthCheckDistance;
+		FHitResult EdgeHitResult;
+
+		bool bFloorHit = World->LineTraceSingleByChannel(EdgeHitResult, Start, End, ECollisionChannel::ECC_Visibility);
+
+		//DrawDebugLine(World, Start, End, FColor::Red, false, 1.0f);
+		if (bFloorHit)
+		{
+			//UE_LOG(LogTemp, Warning, TEXT("Floor hit: %s"), *EdgeHitResult.GetActor()->GetName());
+			return false;
+		}
+
+	}
+	//UE_LOG(LogTemp, Warning, TEXT("No Floor hit!"));
+	return true;
 }
 

@@ -22,13 +22,13 @@ protected:
 
 private:
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UUserWidget> WinScreenClass;
+	TSubclassOf<class UUserWidget> LevelClearedScreenClass;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UUserWidget> HUDClass;
 	UPROPERTY()
 	UUserWidget* HUD;
 
 	UPROPERTY(EditAnywhere)
-	float RestartDelay = 5.f;
+	float RestartDelay = 3.f;
 	FTimerHandle RestartTimer;
 };

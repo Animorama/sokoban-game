@@ -15,10 +15,16 @@ void ASokobanPlayerController::BeginPlay()
 
 void ASokobanPlayerController::GameHasEnded(AActor* EndGameFocus, bool bIsWinner)
 {
-	Super::GameHasEnded(EndGameFocus, bIsWinner);
+	////Super Call Messes up camera, maybe due to dispossessing pawn
+	//Super::GameHasEnded(EndGameFocus, bIsWinner);
 
 	//Handle Hud Logic
-	UE_LOG(LogTemp, Warning, TEXT("Game Has Ended!"));
+	UUserWidget* LevelClearedScreen = CreateWidget(this, LevelClearedScreenClass);
+
+	if (LevelClearedScreen != nullptr)
+	{
+		LevelClearedScreen->AddToViewport();
+	}
 
 
 	GetWorldTimerManager().SetTimer(RestartTimer, this, &APlayerController::RestartLevel, RestartDelay);

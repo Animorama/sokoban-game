@@ -30,6 +30,8 @@ public:
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
 	UStaticMeshComponent* BlockMeshComponent;
+	UPROPERTY(EditAnywhere, Category = "Audio")
+	USoundBase* PushSound;
 
 	class ASokobanCharacter* Character;
 
@@ -43,7 +45,7 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	float PushDistance = 100.f;
 	UPROPERTY(EditDefaultsOnly)
-	float PushTime = 1.f;
+	float PushTime = 0.5f;
 
 	bool bIsMoving = false;
 	FVector TargetLocation = FVector::ZeroVector;
