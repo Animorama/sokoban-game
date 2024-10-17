@@ -41,13 +41,17 @@ private:
 	class UInputAction* QuitGameAction;
 	UPROPERTY(EditAnywhere, Category = "Input")
 	class UInputAction* ResetAction;
+	UPROPERTY(EditAnywhere, Category = "Input")
+	class UInputAction* RotateCameraAction;
 
 	UCharacterMovementComponent* MovementComponent;
+	class UCameraComponent* CameraComponent;
+	class USpringArmComponent* SpringArmComponent;
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, meta = (AllowPrivateAccess = "true"), Category = "Animation")
 	bool bIsPushing = false;
-	const FVector Forward = FVector(1, 0, 0);
-	const FVector Right = FVector(0, 1, 0);
+	FVector Forward = FVector(1, 0, 0);
+	FVector Right = FVector(0, 1, 0);
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	float EdgeOffsetDistance = 50.f;
 	UPROPERTY(EditAnywhere, Category = "Movement")
@@ -57,6 +61,7 @@ private:
 	void Move(const FInputActionValue& Value);
 	void Quit(const FInputActionValue& Value);
 	void Reset(const FInputActionValue& Value);
+	void RotateCamera(const FInputActionValue& Value);
 	bool EdgeInDirection(FVector Direction);
 
 	UPROPERTY(EditAnywhere, Category = "Camera")

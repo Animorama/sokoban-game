@@ -7,6 +7,8 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "DrawDebugHelpers.h"
 #include "SokobanPlayerController.h"
 
@@ -46,6 +48,8 @@ void ASokobanCharacter::BeginPlay()
 
 	SetInitialMappingContext();
 	MovementComponent = GetCharacterMovement();
+	CameraComponent = Cast<UCameraComponent>(GetComponentByClass(UCameraComponent::StaticClass()));
+	SpringArmComponent = Cast<USpringArmComponent>(GetComponentByClass(USpringArmComponent::StaticClass()));
 }
 
 // Called every frame
@@ -84,6 +88,7 @@ void ASokobanCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASokobanCharacter::Move);
 		EnhancedInputComponent->BindAction(QuitGameAction, ETriggerEvent::Triggered, this, &ASokobanCharacter::Quit);
 		EnhancedInputComponent->BindAction(ResetAction, ETriggerEvent::Triggered, this, &ASokobanCharacter::Reset);
+		EnhancedInputComponent->BindAction(RotateCameraAction, ETriggerEvent::Triggered, this, &ASokobanCharacter::RotateCamera);
 	}
 
 }
@@ -97,17 +102,24 @@ void ASokobanCharacter::Move(const FInputActionValue& Value)
 		return;
 	}
 
-	FVector Direction = FVector(MovementVector.Y, MovementVector.X, 0.f);
+	//Align forward with camera's forward, Should not be here
+	Forward = CameraComponent->GetForwardVector();
+	Right = CameraComponent->GetRightVector();
 
-	if (!EdgeInDirection(Direction))
+	//Scale movement using input vector
+	FVector WorldDirection = (Forward * MovementVector.Y) + (Right * MovementVector.X);
+	WorldDirection.Z = 0.f;
+	WorldDirection.Normalize();
+	//UE_LOG(LogTemp, Warning, TEXT("World Direction: %s"), *WorldDirection.ToString());
+
+	if (!EdgeInDirection(WorldDirection))
 	{
-		AddMovementInput(Forward, MovementVector.Y);
-		AddMovementInput(Right, MovementVector.X);
+		AddMovementInput(WorldDirection);
 	}
 
 	////Draw Debug Line Gizmo Of Actor Forward
 	//FVector Start = GetActorLocation();
-	//FVector End = Start + GetActorForwardVector() * 100.f;
+	//FVector End = Start + WorldDirection * 100.f;
 	//DrawDebugLine(GetWorld(), Start, End, FColor::Red);
 }
 
@@ -131,16 +143,39 @@ void ASokobanCharacter::Reset(const FInputActionValue& Value)
 	}
 }
 
+void ASokobanCharacter::RotateCamera(const FInputActionValue& Value)
+{
+	float Direction = Value.Get<float>();
+
+	if (SpringArmComponent)
+	{
+		// Get the current rotation of the camera
+		FRotator CurrentRotation = SpringArmComponent->GetRelativeRotation();
+
+		if (Direction >= 0.f)
+		{
+			CurrentRotation.Yaw += 90.0f;
+		}
+		else
+		{
+			CurrentRotation.Yaw -= 90.0f;
+		}
+
+		// Set the new rotation to the camera component
+		SpringArmComponent->SetRelativeRotation(CurrentRotation);
+	}
+}
+
 bool ASokobanCharacter::EdgeInDirection(FVector Direction)
 {
 	UWorld* World = GetWorld();
 	if (World)
 	{
+		//Direction.Normalize();
 		//Line Trace to check for edges on map
 		//FVector Start = GetActorLocation() + GetActorForwardVector() * 100.f;
 		FVector Start = GetActorLocation() + Direction * EdgeOffsetDistance;
-		FVector End = Start;
-		End.Z -= EdgeDepthCheckDistance;
+		FVector End = Start - FVector(0.f,0.f, EdgeDepthCheckDistance);
 		FHitResult EdgeHitResult;
 
 		bool bFloorHit = World->LineTraceSingleByChannel(EdgeHitResult, Start, End, ECollisionChannel::ECC_Visibility);

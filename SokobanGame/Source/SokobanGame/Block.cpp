@@ -36,6 +36,11 @@ void ABlock::Tick(float DeltaTime)
 	if (bIsMoving)
 	{
 		MoveBlock(DeltaTime);
+		return;
+	}
+	if (bIsFalling)
+	{
+		Fall(DeltaTime);
 	}
 }
 
@@ -119,22 +124,34 @@ bool ABlock::HasObstacle()
 			FCollisionShape::MakeBox(HalfSize),
 			CollisionParams);
 
+#if WITH_EDITOR
 		//Draw Box Path
 		DrawDebugBox(World, Start, HalfSize, FColor::Green, false, 2.0f);
 		DrawDebugBox(World, End, HalfSize, FColor::Blue, false, 2.0f);
-
+#endif
 		//Line Trace to check for edges on map
 		Start = End;
-		End.Z -= 100.f;
+		End.Z -= 200.f;
 		FHitResult EdgeHitResult;
 
 		bool bFloorHit = World->LineTraceSingleByChannel(EdgeHitResult, Start, End, ECollisionChannel::ECC_Visibility, CollisionParams);
+		////Debug
+		//DrawDebugLine(World, Start, End, FColor::Red, true, 2.0f);
+		//AActor* HitActor = EdgeHitResult.GetActor();
+		//if (HitActor)
+		//{
+		//	UE_LOG(LogTemp, Warning, TEXT("Floor Hit: %s"), *HitActor->GetName());
+		//	UE_LOG(LogTemp, Warning, TEXT("Floor Hit: %f"), EdgeHitResult.Distance);
+		//}
 
-		DrawDebugLine(World, Start, End, FColor::Red, false, 2.0f);
+		if (EdgeHitResult.Distance >= 150.f)
+		{
+			bFloorHit = true;
+			bBeyondEdge = true;
+		}
 
 		if (bObstacleHit || !bFloorHit)
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("Actor Hit: %s"), *HitResult.GetActor()->GetName());
 			return true;
 		}
 	}
@@ -158,6 +175,30 @@ void ABlock::MoveBlock(float DeltaTime)
 		bIsMoving = false;
 		Character->SetEnabledMovement(true);
 		Character->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+		if (bBeyondEdge)
+		{
+			bBeyondEdge = false;
+			bIsFalling = true;
+			TargetLocation = GetActorLocation() + GetActorUpVector() * -100.f;
+		}
+	}
+}
+
+void ABlock::Fall(float DeltaTime)
+{
+	FVector CurrentLocation = GetActorLocation();
+	float MovementSpeed = (GetActorUpVector() * -100.f).Length() / 0.2f;
+
+	//Move
+	FVector NewLocation = FMath::VInterpConstantTo(CurrentLocation, TargetLocation, DeltaTime, MovementSpeed);
+	SetActorLocation(NewLocation);
+
+	//Stop moving
+	if (FVector::Dist(CurrentLocation, TargetLocation) < KINDA_SMALL_NUMBER)
+	{
+		SetActorLocation(TargetLocation);
+		bIsFalling = false;
 	}
 }
 

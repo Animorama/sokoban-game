@@ -48,8 +48,11 @@ private:
 	float PushTime = 0.5f;
 
 	bool bIsMoving = false;
+	bool bIsFalling = false;
+	bool bBeyondEdge = false;
 	FVector TargetLocation = FVector::ZeroVector;
 	FVector PushDirection = FVector::ZeroVector;
 
 	void MoveBlock(float DeltaTime);
+	void Fall(float DeltaTime);
 };
