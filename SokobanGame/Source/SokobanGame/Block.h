@@ -23,13 +23,21 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	bool HasObstacle(FVector Direction);
+	void PushBlock();
+	bool bIsMoving = false;
+
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
 	UStaticMeshComponent* BlockMeshComponent;
+	UPROPERTY(EditDefaultsOnly, Category = "Components")
+	class UBoxComponent* BoxComponent;
 	UPROPERTY(EditAnywhere, Category = "Audio")
 	USoundBase* PushSound;
 
@@ -39,15 +47,15 @@ private:
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
-	bool CanPush();
-	bool HasObstacle();
+	bool CanBePushed();
+	
 
 	UPROPERTY(EditDefaultsOnly)
 	float PushDistance = 100.f;
 	UPROPERTY(EditDefaultsOnly)
-	float PushTime = 0.5f;
+	float PushTime = 0.2f;
 
-	bool bIsMoving = false;
+
 	bool bIsFalling = false;
 	bool bBeyondEdge = false;
 	FVector TargetLocation = FVector::ZeroVector;

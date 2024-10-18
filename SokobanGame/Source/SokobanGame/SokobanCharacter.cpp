@@ -5,12 +5,14 @@
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "DrawDebugHelpers.h"
 #include "SokobanPlayerController.h"
+#include "Block.h"
 
 // Sets default values
 ASokobanCharacter::ASokobanCharacter()
@@ -36,6 +38,7 @@ void ASokobanCharacter::SetEnabledMovement(bool bMovementEnabled)
 			MovementComponent->DisableMovement();
 
 			//REFACTOR -> This should not be here?
+			bIsMoving = false;
 			bIsPushing = true;
 		}
 	}
@@ -57,6 +60,39 @@ void ASokobanCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (bIsMoving)
+	{
+		Movement(DeltaTime);
+	}
+}
+
+void ASokobanCharacter::Movement(float DeltaTime)
+{
+	FVector CurrentLocation = GetActorLocation();
+	/*TargetLocation = CurrentLocation + PushDirection * PushDistance;*/
+	float MovementSpeed = (CurrentDirection * MoveDistance).Length() / MoveTime;
+
+	//Move
+	FVector NewLocation = FMath::VInterpConstantTo(CurrentLocation, TargetLocation, DeltaTime, MovementSpeed);
+	SetActorLocation(NewLocation);
+
+	//Stop moving
+	if (FVector::Dist(CurrentLocation, TargetLocation) < 10)
+	{
+		SetActorLocation(TargetLocation);
+		bIsMoving = false;
+		SetEnabledMovement(true);
+	}
+
+	// Calculate the target rotation using the direction vector
+	FRotator TargetRotation = UKismetMathLibrary::MakeRotFromX(CurrentDirection);
+
+	// Smoothly interpolate the current rotation towards the target rotation
+	FRotator CurrentRotation = GetActorRotation();
+	FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, DeltaTime, 10.0f); // 10.0f is the rotation speed
+
+	// Apply the new rotation to the character
+	SetActorRotation(NewRotation);
 }
 
 void ASokobanCharacter::SetInitialMappingContext()
@@ -93,9 +129,66 @@ void ASokobanCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 }
 
+bool ASokobanCharacter::IsValidMove(FVector Direction)
+{
+
+	//Check for edges
+
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		//Direction.Normalize();
+		//Line Trace to check for edges on map
+		FVector Start = GetActorLocation();
+		FVector End = Start + Direction * MoveDistance;
+		FHitResult HitResult;
+
+		bool bHit = World->LineTraceSingleByChannel(HitResult, Start, End, ECollisionChannel::ECC_Visibility);
+		DrawDebugLine(World, Start, End, FColor::Black, false, 2.0f);
+		if (bHit)
+		{
+			AActor* HitActor = HitResult.GetActor();
+			if (HitActor && HitActor->IsA(ABlock::StaticClass()))
+			{
+				//UE_LOG(LogTemp, Warning, TEXT("Hit: %s"), *HitActor->GetName());
+
+				ABlock* BlockToMove = Cast<ABlock>(HitActor);
+				if (!BlockToMove->HasObstacle(Direction))
+				{
+					BlockToMove->PushBlock();
+					bIsPushing = true;
+				}
+				else
+				{
+					return false;
+				}
+				return true;
+			}
+
+			DrawDebugLine(World, Start, End, FColor::Red, false, 2.0f);
+			//UE_LOG(LogTemp, Warning, TEXT("Forward hit: %s"), *HitResult.GetActor()->GetName());
+			return false;
+		}
+		
+
+	}
+	//UE_LOG(LogTemp, Warning, TEXT("Valid Move!"));
+	return true;
+}
+
 void ASokobanCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
+
+	if (bIsMoving || bIsPushing)
+	{
+		return;
+	}
+
+	if (MovementVector.X != 0.f && MovementVector.Y != 0.f)
+	{
+		return;
+	}
 
 	if (MovementVector.IsNearlyZero())
 	{
@@ -106,15 +199,22 @@ void ASokobanCharacter::Move(const FInputActionValue& Value)
 	Forward = CameraComponent->GetForwardVector();
 	Right = CameraComponent->GetRightVector();
 
+	MovementVector.X = FMath::Sign(MovementVector.X);
+	MovementVector.Y = FMath::Sign(MovementVector.Y);
+
 	//Scale movement using input vector
 	FVector WorldDirection = (Forward * MovementVector.Y) + (Right * MovementVector.X);
 	WorldDirection.Z = 0.f;
 	WorldDirection.Normalize();
+
 	//UE_LOG(LogTemp, Warning, TEXT("World Direction: %s"), *WorldDirection.ToString());
 
-	if (!EdgeInDirection(WorldDirection))
+	if (!EdgeInDirection(WorldDirection) && IsValidMove(WorldDirection))
 	{
-		AddMovementInput(WorldDirection);
+		//AddMovementInput(WorldDirection);
+		TargetLocation = GetActorLocation() + WorldDirection * MoveDistance;
+		CurrentDirection = WorldDirection;
+		bIsMoving = true;
 	}
 
 	////Draw Debug Line Gizmo Of Actor Forward
@@ -180,7 +280,7 @@ bool ASokobanCharacter::EdgeInDirection(FVector Direction)
 
 		bool bFloorHit = World->LineTraceSingleByChannel(EdgeHitResult, Start, End, ECollisionChannel::ECC_Visibility);
 
-		//DrawDebugLine(World, Start, End, FColor::Red, false, 1.0f);
+		DrawDebugLine(World, Start, End, FColor::Blue, false, 1.0f);
 		if (bFloorHit)
 		{
 			//UE_LOG(LogTemp, Warning, TEXT("Floor hit: %s"), *EdgeHitResult.GetActor()->GetName());
@@ -188,7 +288,7 @@ bool ASokobanCharacter::EdgeInDirection(FVector Direction)
 		}
 
 	}
-	//UE_LOG(LogTemp, Warning, TEXT("No Floor hit!"));
+	UE_LOG(LogTemp, Warning, TEXT("No Floor hit!"));
 	return true;
 }
 

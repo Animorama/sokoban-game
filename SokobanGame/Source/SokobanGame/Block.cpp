@@ -3,6 +3,7 @@
 
 #include "Block.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "SokobanCharacter.h"
 
@@ -20,6 +21,12 @@ void ABlock::BeginPlay()
 
 	//N: FindComponentByClass CANNOT be called before BeginPlay
 	BlockMeshComponent = FindComponentByClass<UStaticMeshComponent>();
+	BoxComponent = FindComponentByClass<UBoxComponent>();
+	if (BoxComponent == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BoxComponent not set!"));
+	}
+
 	if (BlockMeshComponent != nullptr)
 	{
 		//Function used to bind our callback function to invocation list of OnComponentHit Event
@@ -46,31 +53,32 @@ void ABlock::Tick(float DeltaTime)
 
 void ABlock::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {	
-	float VectorX = (FMath::Abs(OtherActor->GetActorForwardVector().X) >= 0.5f) ? FMath::Sign(OtherActor->GetActorForwardVector().X) : 0.f;
-	float VectorY = (FMath::Abs(OtherActor->GetActorForwardVector().Y) >= 0.5f) ? FMath::Sign(OtherActor->GetActorForwardVector().Y) : 0.f;
-	FVector OtherActorDirection(VectorX, VectorY, 0.f);
-	//UE_LOG(LogTemp, Warning, TEXT("Other Actor Direction: %s"), *OtherActorDirection.ToString());
+	//float VectorX = (FMath::Abs(OtherActor->GetActorForwardVector().X) >= 0.5f) ? FMath::Sign(OtherActor->GetActorForwardVector().X) : 0.f;
+	//float VectorY = (FMath::Abs(OtherActor->GetActorForwardVector().Y) >= 0.5f) ? FMath::Sign(OtherActor->GetActorForwardVector().Y) : 0.f;
+	//FVector OtherActorDirection(VectorX, VectorY, 0.f);
+	//UE_LOG(LogTemp, Warning, TEXT("Other Actor: %s"), *OtherActor->GetName());
+	////UE_LOG(LogTemp, Warning, TEXT("Other Actor Direction: %s"), *OtherActorDirection.ToString());
 
-	PushDirection = OtherActorDirection;
+	//PushDirection = OtherActorDirection;
 
-	if (Character && CanPush())
-	{
-		if(!bIsMoving && !HasObstacle())
-		{
-			Character->SetEnabledMovement(false);
-			//Seemingly, attachment rules must be defined
-			FAttachmentTransformRules AttachmentRules(EAttachmentRule::KeepWorld, true);
-			Character->AttachToActor(this, AttachmentRules);
-			TargetLocation = GetActorLocation() + PushDirection * PushDistance;
-			bIsMoving = true;
+	//if (Character && CanBePushed())
+	//{
+	//	if(!bIsMoving && !HasObstacle())
+	//	{
+	//		Character->SetEnabledMovement(false);
+	//		//Seemingly, attachment rules must be defined
+	//		FAttachmentTransformRules AttachmentRules(EAttachmentRule::KeepWorld, true);
+	//		Character->AttachToActor(this, AttachmentRules);
+	//		TargetLocation = GetActorLocation() + PushDirection * PushDistance;
+	//		bIsMoving = true;
 
-			//Play sound
-			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), PushSound, GetActorLocation());
-		}
-	}
+	//		//Play sound
+	//		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), PushSound, GetActorLocation());
+	//	}
+	//}
 }
 
-bool ABlock::CanPush()
+bool ABlock::CanBePushed()
 {
 	UWorld* World = GetWorld();
 	if (Character && World)
@@ -96,15 +104,19 @@ bool ABlock::CanPush()
 	return false;
 }
 
-bool ABlock::HasObstacle()
+bool ABlock::HasObstacle(FVector Direction)
 {
 	UWorld* World = GetWorld();
 	if (World)
 	{
+		PushDirection = Direction;
+
 		//Box Trace from this Block did not find an obstacle in pushing direction
 		FVector Start = GetActorLocation();
 		//Get World Size of Box, returns half-size EX: 100cm box returns 50cm
-		FVector HalfSize = BlockMeshComponent->Bounds.BoxExtent;
+		FVector HalfSize = BoxComponent->Bounds.BoxExtent;
+
+		//FVector HalfSize = BlockMeshComponent->Bounds.BoxExtent;
 		FVector End = Start + PushDirection * PushDistance;
 		FQuat BoxRotation = FQuat::Identity;
 		FCollisionQueryParams CollisionParams;
@@ -156,6 +168,15 @@ bool ABlock::HasObstacle()
 		}
 	}
 	return false;
+}
+
+void ABlock::PushBlock()
+{
+	TargetLocation = GetActorLocation() + PushDirection * PushDistance;
+	bIsMoving = true;
+
+	//Play Sound
+	UGameplayStatics::SpawnSoundAtLocation(GetWorld(), PushSound, GetActorLocation());
 }
 
 void ABlock::MoveBlock(float DeltaTime)

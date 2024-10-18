@@ -50,14 +50,24 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, meta = (AllowPrivateAccess = "true"), Category = "Animation")
 	bool bIsPushing = false;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, meta = (AllowPrivateAccess = "true"), Category = "Animation")
+	bool bIsMoving = false;
+	FVector CurrentDirection;
 	FVector Forward = FVector(1, 0, 0);
 	FVector Right = FVector(0, 1, 0);
-	UPROPERTY(EditAnywhere, Category = "Movement")
-	float EdgeOffsetDistance = 50.f;
-	UPROPERTY(EditAnywhere, Category = "Movement")
+	UPROPERTY(EditDefaultsOnly, Category = "Movement")
+	float MoveDistance = 100.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Movement")
+	float MoveTime = 0.2f;
+	FVector TargetLocation;
+	UPROPERTY(EditDefaultsOnly, Category = "Movement")
+	float EdgeOffsetDistance = 100.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Movement")
 	float EdgeDepthCheckDistance = 100.f;
 
 	void SetInitialMappingContext();
+	bool IsValidMove(FVector Direction);
+	void Movement(float DeltaTime);
 	void Move(const FInputActionValue& Value);
 	void Quit(const FInputActionValue& Value);
 	void Reset(const FInputActionValue& Value);
