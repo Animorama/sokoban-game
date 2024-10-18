@@ -16,8 +16,6 @@ public:
 	// Sets default values for this character's properties
 	ASokobanCharacter();
 
-	void SetEnabledMovement(bool bMovementEnabled);
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -28,6 +26,8 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	void SetEnabledMovement(bool bMovementEnabled);
 
 private:
 	APlayerController* SokobanPlayerController;
@@ -44,36 +44,42 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	class UInputAction* RotateCameraAction;
 
+
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	TSubclassOf<class UCameraShakeBase> ResetCameraShakeClass;
+
 	UCharacterMovementComponent* MovementComponent;
 	class UCameraComponent* CameraComponent;
 	class USpringArmComponent* SpringArmComponent;
 
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, meta = (AllowPrivateAccess = "true"), Category = "Animation")
-	bool bIsPushing = false;
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, meta = (AllowPrivateAccess = "true"), Category = "Animation")
-	bool bIsMoving = false;
-	FVector CurrentDirection;
 	FVector Forward = FVector(1, 0, 0);
 	FVector Right = FVector(0, 1, 0);
+	FVector CurrentDirection;
+	FVector TargetLocation;
 	UPROPERTY(EditDefaultsOnly, Category = "Movement")
 	float MoveDistance = 100.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Movement")
 	float MoveTime = 0.2f;
-	FVector TargetLocation;
 	UPROPERTY(EditDefaultsOnly, Category = "Movement")
 	float EdgeOffsetDistance = 100.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Movement")
 	float EdgeDepthCheckDistance = 100.f;
 
+	//States
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, meta = (AllowPrivateAccess = "true"), Category = "Animation")
+	bool bIsMoving = false;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, meta = (AllowPrivateAccess = "true"), Category = "Animation")
+	bool bIsPushing = false;
+
 	void SetInitialMappingContext();
-	bool IsValidMove(FVector Direction);
+	void HandleInput(const FInputActionValue& Value);
+	void AlignForwardToCamera();
+	bool IsValidMove(const FVector& Direction);
 	void Movement(float DeltaTime);
-	void Move(const FInputActionValue& Value);
 	void Quit(const FInputActionValue& Value);
 	void Reset(const FInputActionValue& Value);
 	void RotateCamera(const FInputActionValue& Value);
-	bool EdgeInDirection(FVector Direction);
+	bool EdgeInDirection(const FVector& Direction);
+	AActor* GetObstacleInDirection(const FVector& Direction);
 
-	UPROPERTY(EditAnywhere, Category = "Camera")
-	TSubclassOf<class UCameraShakeBase> ResetCameraShakeClass;
 };

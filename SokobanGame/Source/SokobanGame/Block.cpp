@@ -20,17 +20,10 @@ void ABlock::BeginPlay()
 	Super::BeginPlay();
 
 	//N: FindComponentByClass CANNOT be called before BeginPlay
-	BlockMeshComponent = FindComponentByClass<UStaticMeshComponent>();
 	BoxComponent = FindComponentByClass<UBoxComponent>();
 	if (BoxComponent == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("BoxComponent not set!"));
-	}
-
-	if (BlockMeshComponent != nullptr)
-	{
-		//Function used to bind our callback function to invocation list of OnComponentHit Event
-		BlockMeshComponent->OnComponentHit.AddDynamic(this, &ABlock::OnHit);
 	}
 	Character = Cast<ASokobanCharacter>(UGameplayStatics::GetPlayerPawn(this, 0));
 }
@@ -42,7 +35,7 @@ void ABlock::Tick(float DeltaTime)
 
 	if (bIsMoving)
 	{
-		MoveBlock(DeltaTime);
+		Move(DeltaTime);
 		return;
 	}
 	if (bIsFalling)
@@ -51,60 +44,7 @@ void ABlock::Tick(float DeltaTime)
 	}
 }
 
-void ABlock::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-{	
-	//float VectorX = (FMath::Abs(OtherActor->GetActorForwardVector().X) >= 0.5f) ? FMath::Sign(OtherActor->GetActorForwardVector().X) : 0.f;
-	//float VectorY = (FMath::Abs(OtherActor->GetActorForwardVector().Y) >= 0.5f) ? FMath::Sign(OtherActor->GetActorForwardVector().Y) : 0.f;
-	//FVector OtherActorDirection(VectorX, VectorY, 0.f);
-	//UE_LOG(LogTemp, Warning, TEXT("Other Actor: %s"), *OtherActor->GetName());
-	////UE_LOG(LogTemp, Warning, TEXT("Other Actor Direction: %s"), *OtherActorDirection.ToString());
-
-	//PushDirection = OtherActorDirection;
-
-	//if (Character && CanBePushed())
-	//{
-	//	if(!bIsMoving && !HasObstacle())
-	//	{
-	//		Character->SetEnabledMovement(false);
-	//		//Seemingly, attachment rules must be defined
-	//		FAttachmentTransformRules AttachmentRules(EAttachmentRule::KeepWorld, true);
-	//		Character->AttachToActor(this, AttachmentRules);
-	//		TargetLocation = GetActorLocation() + PushDirection * PushDistance;
-	//		bIsMoving = true;
-
-	//		//Play sound
-	//		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), PushSound, GetActorLocation());
-	//	}
-	//}
-}
-
-bool ABlock::CanBePushed()
-{
-	UWorld* World = GetWorld();
-	if (Character && World)
-	{
-		//Line Trace from Character Hit this Block
-		FVector Start = Character->GetActorLocation();
-		FVector End = Start + Character->GetActorForwardVector() * 100.f;
-		FHitResult HitResult;
-		FCollisionQueryParams CollisionParams;
-		CollisionParams.AddIgnoredActor(Character);
-
-		bool bHit = World->LineTraceSingleByChannel(HitResult, Start, End, ECollisionChannel::ECC_Visibility);
-		
-		//Make Sure Block only moves in cardinal directions
-		float Dot = static_cast<float>(HitResult.Normal.Dot(Character->GetActorForwardVector()));
-		
-		if (bHit && HitResult.GetActor() == this && FMath::Abs(Dot) >= 0.92f)
-		{
-			return true;
-		}
-
-	}
-	return false;
-}
-
-bool ABlock::HasObstacle(FVector Direction)
+bool ABlock::CanBePushed(FVector Direction)
 {
 	UWorld* World = GetWorld();
 	if (World)
@@ -115,8 +55,6 @@ bool ABlock::HasObstacle(FVector Direction)
 		FVector Start = GetActorLocation();
 		//Get World Size of Box, returns half-size EX: 100cm box returns 50cm
 		FVector HalfSize = BoxComponent->Bounds.BoxExtent;
-
-		//FVector HalfSize = BlockMeshComponent->Bounds.BoxExtent;
 		FVector End = Start + PushDirection * PushDistance;
 		FQuat BoxRotation = FQuat::Identity;
 		FCollisionQueryParams CollisionParams;
@@ -147,14 +85,6 @@ bool ABlock::HasObstacle(FVector Direction)
 		FHitResult EdgeHitResult;
 
 		bool bFloorHit = World->LineTraceSingleByChannel(EdgeHitResult, Start, End, ECollisionChannel::ECC_Visibility, CollisionParams);
-		////Debug
-		//DrawDebugLine(World, Start, End, FColor::Red, true, 2.0f);
-		//AActor* HitActor = EdgeHitResult.GetActor();
-		//if (HitActor)
-		//{
-		//	UE_LOG(LogTemp, Warning, TEXT("Floor Hit: %s"), *HitActor->GetName());
-		//	UE_LOG(LogTemp, Warning, TEXT("Floor Hit: %f"), EdgeHitResult.Distance);
-		//}
 
 		if (EdgeHitResult.Distance >= 150.f)
 		{
@@ -162,7 +92,7 @@ bool ABlock::HasObstacle(FVector Direction)
 			bBeyondEdge = true;
 		}
 
-		if (bObstacleHit || !bFloorHit)
+		if (!bObstacleHit && bFloorHit)
 		{
 			return true;
 		}
@@ -179,10 +109,10 @@ void ABlock::PushBlock()
 	UGameplayStatics::SpawnSoundAtLocation(GetWorld(), PushSound, GetActorLocation());
 }
 
-void ABlock::MoveBlock(float DeltaTime)
+void ABlock::Move(float DeltaTime)
 {
 	FVector CurrentLocation = GetActorLocation();
-	/*TargetLocation = CurrentLocation + PushDirection * PushDistance;*/
+
 	float MovementSpeed = (PushDirection * PushDistance).Length() / PushTime;
 
 	//Move
@@ -194,8 +124,8 @@ void ABlock::MoveBlock(float DeltaTime)
 	{
 		SetActorLocation(TargetLocation);
 		bIsMoving = false;
-		Character->SetEnabledMovement(true);
-		Character->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		//Character->SetEnabledMovement(true);
+		//Character->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 
 		if (bBeyondEdge)
 		{

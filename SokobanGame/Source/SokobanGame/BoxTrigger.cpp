@@ -27,8 +27,8 @@ void ABoxTrigger::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
 
 	if (OtherActor && (this != OtherActor) && OtherActor->IsA(ABlock::StaticClass()))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s was overlapped"), *OverlappedActor->GetName());
-		UE_LOG(LogTemp, Warning, TEXT("%s has entered the box"), *OtherActor->GetName());
+		//UE_LOG(LogTemp, Warning, TEXT("%s was overlapped"), *OverlappedActor->GetName());
+		//UE_LOG(LogTemp, Warning, TEXT("%s has entered the box"), *OtherActor->GetName());
 		bIsOccupied = true;
 		if (GameMode != nullptr)
 		{
@@ -41,7 +41,7 @@ void ABoxTrigger::OnOverlapEnd(AActor* OverlappedActor, AActor* OtherActor)
 {
 	if (OtherActor && (this != OtherActor) && OtherActor->IsA(ABlock::StaticClass()))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s has entered the box"), *OtherActor->GetName());
+		//UE_LOG(LogTemp, Warning, TEXT("%s has entered the box"), *OtherActor->GetName());
 		bIsOccupied = false;
 	}
 }
